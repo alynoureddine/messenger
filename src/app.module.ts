@@ -5,6 +5,8 @@ import { SocketModule } from './socket/socket.module';
 import { AuthModule } from './auth/auth.module';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { FriendRequestModule } from './friend-request/friend-request.module';
+import { UserModule } from './users/user.module';
 
 @Module({
   imports: [
@@ -34,6 +36,8 @@ import { TypeOrmModule } from '@nestjs/typeorm';
     //   }),
     //   inject: [ConfigService],
     // }),
+    UserModule,
+    FriendRequestModule,
   ],
   controllers: [AppController],
   providers: [AppService],

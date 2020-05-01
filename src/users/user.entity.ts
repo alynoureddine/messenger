@@ -1,7 +1,8 @@
-import { BeforeInsert, Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import { BeforeInsert, Column, Entity, JoinTable, ManyToMany, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
 import { IsEmail } from 'class-validator';
 import * as bcrypt from 'bcrypt';
 import { Exclude } from 'class-transformer';
+import { FriendRequestEntity } from '../friend-request/friend-request.entity';
 
 @Entity('user')
 export class UserEntity {
@@ -30,4 +31,11 @@ export class UserEntity {
   async hashPassword() {
     this.password = await bcrypt.hash(this.password, 10);
   }
+
+  @ManyToMany(type => UserEntity, user => user)
+  @JoinTable()
+  friends: UserEntity[];
+
+  @OneToMany(type => FriendRequestEntity, friend => friend.requester)
+  friendRequests: FriendRequestEntity[]
 }
