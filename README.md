@@ -1,6 +1,6 @@
 ## This is a work in progress..
 
-This is the unfinished back-end part of a <b>chat app</b>, to be built using the following: 
+This is the unfinished back-end part of a <b>Real-Time Chatting App</b>, to be built using the following: 
 * <a href="https://nestjs.com/">NestJS</a> as a NodeJS framework
 * <a href="https://socket.io/">Socket.io</a> for websockets
 * <a href="https://www.docker.com/">Docker</a> as a container
