@@ -5,7 +5,7 @@ This is the unfinished back-end part of a <b>Real-Time Chatting App</b>, to be b
 * <a href="https://socket.io/">Socket.io</a> for websockets
 * <a href="https://www.docker.com/">Docker</a> as a container
 * <a href="http://www.passportjs.org/">Passport</a> for authentication
-* <a href="https://reactjs.org/">React</a> for client side (will create a different repo for that)
+* <a href="https://reactjs.org/">React</a> for client side (you can find it in a different repo <a href="https://https://github.com/alynoureddine/messenger-client">here</a>)
 * <a href="https://www.mongodb.com/">MongoDB</a> for sessions (using mongoose as an ORM)
 * <a href="https://www.mysql.com/">MySQL</a> as a default relational database (using TypeORM)
 * <a href="https://jestjs.io/">Jest</a> for testing
