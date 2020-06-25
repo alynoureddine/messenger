@@ -11,6 +11,12 @@ export class UserEntity {
   id: number;
 
   @Column()
+  firstName: string;
+
+  @Column()
+  lastName: string;
+
+  @Column()
   username: string;
 
   @Column()

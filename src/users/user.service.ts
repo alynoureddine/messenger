@@ -12,14 +12,18 @@ export class UserService {
     private readonly userRepository: Repository<UserEntity>
   ) {}
 
-  async findOne(username: string): Promise<any> {
+  async findOne(id: number): Promise<UserEntity> {
+    return this.userRepository.findOne({ id });
+  }
+
+  async findOneByUsername(username: string): Promise<UserEntity> {
     return this.userRepository.findOne({ username });
   }
 
   async create(dto: CreateUserDto): Promise<UserEntity> {
 
     // check uniqueness of username/email
-    const { username, email, password } = dto;
+    const { username, email, password, firstName, lastName } = dto;
     const qb = this.userRepository
       .createQueryBuilder('user')
       .where('user.username = :username', { username })
@@ -37,6 +41,8 @@ export class UserService {
     newUser.username = username;
     newUser.email = email;
     newUser.password = password;
+    newUser.firstName = firstName;
+    newUser.lastName = lastName;
 
     const errors = await validate(newUser);
     if (errors.length > 0) {
@@ -46,5 +52,11 @@ export class UserService {
     } else {
       return await this.userRepository.save(newUser);
     }
+  }
+
+  public async getFriends(id: number): Promise<UserEntity[]> {
+    const user: UserEntity = await this.userRepository.findOne({ id }, { relations: ['friends'] });
+
+    return user.friends;
   }
 }
