@@ -3,8 +3,8 @@ import { AppModule } from './app.module';
 import * as passport from 'passport';
 import * as session from 'express-session';
 import { ConfigService } from '@nestjs/config';
-import { UserService } from './users/user.service';
 import { ClassSerializerInterceptor } from '@nestjs/common';
+import { AuthenticatedGuard } from './common/guards/authenticated.guard';
 
 const MongoDBStore = require('connect-mongodb-session')(session);
 
@@ -26,6 +26,7 @@ async function bootstrap() {
   app.use(passport.initialize());
   app.use(passport.session());
 
+  app.useGlobalGuards(new AuthenticatedGuard(app.get(Reflector)));
   app.useGlobalInterceptors(new ClassSerializerInterceptor(app.get(Reflector)));
 
   await app.listen(3100);

@@ -7,6 +7,10 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { FriendRequestModule } from './friend-request/friend-request.module';
 import { UserModule } from './users/user.module';
+import { ChatModule } from './chat/chat.module';
+import { MessageModule } from './message/message.module';
+import { GroupModule } from './group/group.module';
+import { GroupMessageModule } from './group-message/group-message.module';
 
 @Module({
   imports: [
@@ -27,17 +31,12 @@ import { UserModule } from './users/user.module';
       }),
       inject: [ConfigService],
     }),
-    // MongooseModule.forRootAsync({
-    //   imports: [ConfigModule],
-    //   useFactory: async (configService: ConfigService) => ({
-    //     uri: configService.get<string>('MONGODB_URI'),
-    //     useNewUrlParser: true,
-    //     useUnifiedTopology: true,
-    //   }),
-    //   inject: [ConfigService],
-    // }),
     UserModule,
     FriendRequestModule,
+    ChatModule,
+    MessageModule,
+    GroupModule,
+    GroupMessageModule,
   ],
   controllers: [AppController],
   providers: [AppService],
