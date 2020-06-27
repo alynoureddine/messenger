@@ -3,12 +3,13 @@ import { IsEmail } from 'class-validator';
 import * as bcrypt from 'bcrypt';
 import { Exclude } from 'class-transformer';
 import { FriendRequestEntity } from '../friend-request/friend-request.entity';
+import { ChatEntity } from '../chat/chat.entity';
 
 @Entity('user')
 export class UserEntity {
 
   @PrimaryGeneratedColumn()
-  id: number;
+  id!: number;
 
   @Column()
   firstName: string;
@@ -43,5 +44,9 @@ export class UserEntity {
   friends: UserEntity[];
 
   @OneToMany(type => FriendRequestEntity, friend => friend.requester)
-  friendRequests: FriendRequestEntity[]
+  friendRequests: FriendRequestEntity[];
+
+  @ManyToMany(type => ChatEntity, chat => chat.users)
+  @JoinTable()
+  chats: ChatEntity[];
 }

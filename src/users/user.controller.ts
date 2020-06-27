@@ -1,7 +1,6 @@
-import { Controller, Get, Request, UseGuards } from '@nestjs/common';
+import { Controller, Get, Query, Request } from '@nestjs/common';
 import { UserService } from './user.service';
 import { UserEntity } from './user.entity';
-import { AuthenticatedGuard } from '../common/guards/authenticated.guard';
 
 @Controller('users')
 export class UserController {
@@ -10,9 +9,13 @@ export class UserController {
     private readonly userService: UserService,
   ) {}
 
-  @UseGuards(AuthenticatedGuard)
   @Get('friends')
   async getFriends(@Request() req): Promise<UserEntity[]> {
     return this.userService.getFriends(req.user.id);
+  }
+
+  @Get()
+  async getUsers(@Request() req, @Query('username') username: string): Promise<UserEntity[]> {
+    return this.userService.getUsers(username);
   }
 }

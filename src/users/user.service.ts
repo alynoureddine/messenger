@@ -9,8 +9,9 @@ import { validate } from 'class-validator';
 export class UserService {
   constructor(
     @InjectRepository(UserEntity)
-    private readonly userRepository: Repository<UserEntity>
-  ) {}
+    private readonly userRepository: Repository<UserEntity>,
+  ) {
+  }
 
   async findOne(id: number): Promise<UserEntity> {
     return this.userRepository.findOne({ id });
@@ -46,11 +47,11 @@ export class UserService {
 
     const errors = await validate(newUser);
     if (errors.length > 0) {
-      const errors = {username: 'Userinput is not valid.'};
-      throw new HttpException({message: 'Input data validation failed', errors}, HttpStatus.BAD_REQUEST);
+      const errors = { username: 'User input is not valid.' };
+      throw new HttpException({ message: 'Input data validation failed', errors }, HttpStatus.BAD_REQUEST);
 
     } else {
-      return await this.userRepository.save(newUser);
+      return this.userRepository.save(newUser);
     }
   }
 
@@ -58,5 +59,20 @@ export class UserService {
     const user: UserEntity = await this.userRepository.findOne({ id }, { relations: ['friends'] });
 
     return user.friends;
+  }
+
+  public async getFriend(userId: number, friendId: number): Promise<UserEntity> {
+    // get friend and make sure that both users are actually friends
+    return this.userRepository.createQueryBuilder('friend')
+      .where('friend.id = :friendId', { friendId })
+      .leftJoin('friend.friends', 'user')
+      .where('user.id = :userId', { userId })
+      .getOne();
+  }
+
+  public getUsers(username: string): Promise<UserEntity[]> {
+    return this.userRepository.createQueryBuilder('user')
+      .where('user.username like :username', {username: `%${username}%`})
+      .getMany()
   }
 }
