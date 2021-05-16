@@ -1,4 +1,4 @@
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import { BadRequestException, HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { GroupEntity } from './group.entity';
@@ -19,8 +19,7 @@ export class GroupService {
     const user: UserEntity = await this.userService.findOne(userId);
 
     if (!user) {
-      const errors = {user: 'User is not valid.'};
-      throw new HttpException({message: 'Group creation failed', errors}, HttpStatus.BAD_REQUEST);
+      throw new BadRequestException(['User is not valid.'])
     }
 
     const friends: UserEntity[] = await Promise.all(friendIds.map((friendId) =>
@@ -28,8 +27,7 @@ export class GroupService {
     ));
 
     if (friends.length < 1) {
-      const errors = {friendId: 'Please enter a valid friend IDs'};
-      throw new HttpException({message: 'Input data validation failed', errors}, HttpStatus.BAD_REQUEST);
+      throw new BadRequestException(['friend IDs are not valid.'])
     }
 
     group.users = [user, ...friends];
@@ -41,9 +39,9 @@ export class GroupService {
     //left join on users twice to load all other users into the group entity, then exclude the current user
     return this.groupRepository.createQueryBuilder('group')
       .leftJoin('group.users', 'currentUser')
-      .where('currentUser.id = :userId', {userId})
       .leftJoinAndSelect('group.users', 'user')
-      .where('user.id != :userId', {userId})
+      .where('currentUser.id = :userId', {userId})
+      .andWhere('user.id != :userId', {userId})
       .getMany();
   }
 }

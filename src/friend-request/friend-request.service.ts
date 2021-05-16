@@ -1,10 +1,11 @@
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import { BadRequestException, HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { FriendRequestEntity } from './friend-request.entity';
 import { CreateFriendRequestDto } from './dto/create-friend-request-dto';
 import { UserEntity } from '../users/user.entity';
 import { FriendRequestStatus } from './enum/friend-request.status';
+import {Not} from "typeorm";
 
 @Injectable()
 export class FriendRequestService {
@@ -16,17 +17,21 @@ export class FriendRequestService {
   ) {
   }
 
+  public async get(user: UserEntity): Promise<FriendRequestEntity[]> {
+     return this.friendRepository.find({ where: { responder: user, status: 'pending'} });
+  }
+
   public async create(requester: UserEntity, { username }: CreateFriendRequestDto): Promise<FriendRequestEntity> {
     const responder: UserEntity = await this.userRepository.findOne( { username });
 
     // check if user exists
     if (!responder) {
-      throw new HttpException('Invalid username', HttpStatus.BAD_REQUEST);
+      throw new HttpException(['Invalid username'], HttpStatus.BAD_REQUEST);
     }
 
     // check if user is sending request to them self
     if (requester.id === responder.id) {
-      throw new HttpException('Invalid username', HttpStatus.BAD_REQUEST);
+      throw new HttpException(['Invalid username'], HttpStatus.BAD_REQUEST);
     }
 
     // check if request is still pending
@@ -37,14 +42,14 @@ export class FriendRequestService {
     });
 
     if (friendRequest) {
-      throw new HttpException('Friend request is still pending', HttpStatus.BAD_REQUEST);
+      throw new HttpException(['Friend request is still pending'], HttpStatus.BAD_REQUEST);
     }
 
     // check if the two users are already friends
     const friend: UserEntity = await this.getFriend(requester, responder);
 
     if (friend) {
-      throw new HttpException(`${responder.username} is already a friend`, HttpStatus.BAD_REQUEST);
+      throw new HttpException([`${responder.username} is already a friend`], HttpStatus.BAD_REQUEST);
     }
 
     // create friend request
@@ -61,15 +66,15 @@ export class FriendRequestService {
     let friendRequest: FriendRequestEntity = await this.friendRepository.findOne({ id, responder });
 
     if (!friendRequest) {
-      throw new HttpException('invalid friend request id', HttpStatus.BAD_REQUEST);
+      throw new HttpException(['invalid friend request id'], HttpStatus.BAD_REQUEST);
     }
 
     if (friendRequest.status !== FriendRequestStatus.PENDING) {
-        throw new HttpException('Friend request is not pending anymore', HttpStatus.BAD_REQUEST);
+      throw new BadRequestException(['Friend request is not pending anymore'])
     }
 
     friendRequest.status = FriendRequestStatus.ACCEPTED;
-    this.addFriend(friendRequest.requester, friendRequest.responder);
+    this.addFriend(friendRequest.requester, responder);
 
     return this.friendRepository.save(friendRequest);
   }
@@ -78,11 +83,11 @@ export class FriendRequestService {
     let friendRequest: FriendRequestEntity = await this.friendRepository.findOne({ id, responder });
 
     if (!friendRequest) {
-      throw new HttpException('invalid friend request id', HttpStatus.BAD_REQUEST);
+      throw new HttpException(['invalid friend request id'], HttpStatus.BAD_REQUEST);
     }
 
     if (friendRequest.status !== FriendRequestStatus.PENDING) {
-      throw new HttpException('Friend request is not pending anymore', HttpStatus.BAD_REQUEST);
+      throw new HttpException(['Friend request is not pending anymore'], HttpStatus.BAD_REQUEST);
     }
 
     friendRequest.status = FriendRequestStatus.DECLINED;
@@ -94,11 +99,11 @@ export class FriendRequestService {
     let friendRequest: FriendRequestEntity = await this.friendRepository.findOne({ id, requester });
 
     if (!friendRequest) {
-      throw new HttpException('invalid friend request id', HttpStatus.BAD_REQUEST);
+      throw new HttpException(['invalid friend request id'], HttpStatus.BAD_REQUEST);
     }
 
     if (friendRequest.status !== FriendRequestStatus.PENDING) {
-      throw new HttpException('Friend request is not pending anymore', HttpStatus.BAD_REQUEST);
+      throw new HttpException(['Friend request is not pending anymore'], HttpStatus.BAD_REQUEST);
     }
 
     friendRequest.status = FriendRequestStatus.CANCELLED;
@@ -111,7 +116,7 @@ export class FriendRequestService {
     const friend: UserEntity = await this.getFriend(userOne, userTwo);
 
     if(friend) {
-      throw new HttpException('Friend already added', HttpStatus.BAD_REQUEST);
+      throw new HttpException(['Friend already added'], HttpStatus.BAD_REQUEST);
     }
 
     // add userTwo to userOne's friends

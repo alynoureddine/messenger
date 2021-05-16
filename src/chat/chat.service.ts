@@ -1,4 +1,4 @@
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import { BadRequestException, HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { ChatEntity } from './chat.entity';
@@ -13,21 +13,27 @@ export class ChatService {
     private readonly userService: UserService,
   ) {}
 
-  async create(userId: number, friendId: number): Promise<ChatEntity> {
+  public findOne(id: number): Promise<ChatEntity> {
+    return this.chatRepository.findOne({ id });
+  }
+
+  public async create(userId: number, friendId: number): Promise<ChatEntity> {
     let chat: ChatEntity = new ChatEntity();
 
     const user: UserEntity = await this.userService.findOne(userId);
 
     if (!user) {
-      const errors = {user: 'User is not valid.'};
-      throw new HttpException({message: 'Chat creation failed', errors}, HttpStatus.BAD_REQUEST);
+      throw new BadRequestException(['User is not valid.']);
     }
 
     const friend: UserEntity = await this.userService.getFriend(userId, friendId);
 
     if (!friend) {
-      const errors = {friendId: 'Please enter a valid friend ID'};
-      throw new HttpException({message: 'Input data validation failed', errors}, HttpStatus.BAD_REQUEST);
+      throw new BadRequestException(['Friend ID is not valid.']);
+    }
+
+    if (await this.getChat(userId, friendId)) {
+      throw new BadRequestException(['Chat already exists']);
     }
 
     chat.users = [user, friend];
@@ -35,13 +41,27 @@ export class ChatService {
     return this.chatRepository.save(chat);
   }
 
-  getChatList(userId: number): Promise<ChatEntity[]> {
-    //left join on users twice to load the friend into the chat entity, then exclude the current user
+  public getChatList(userId: number): Promise<ChatEntity[]> {
     return this.chatRepository.createQueryBuilder('chat')
-      .leftJoin('chat.users', 'currentUser')
-      .where('currentUser.id = :userId', {userId})
+      .leftJoinAndSelect('chat.users', 'currentUser')
       .leftJoinAndSelect('chat.users', 'user')
-      .where('user.id != :userId', {userId})
+      .where('currentUser.id = :userId', {userId})
       .getMany();
+  }
+
+  public getChat(userId: number, friendId: number) {
+    return this.chatRepository.createQueryBuilder('chat')
+      .leftJoinAndSelect('chat.users', 'currentUser')
+      .leftJoinAndSelect('chat.users', 'user')
+      .where('currentUser.id = :userId', {userId})
+      .andWhere('user.id = :friendId', {friendId})
+      .getOne();
+  }
+
+  public getChatById(id: number, userId): Promise<ChatEntity> {
+    return this.chatRepository.findOne(
+      { id: id },
+      { relations: ['users', 'messages', 'messages.user'] },
+    );
   }
 }

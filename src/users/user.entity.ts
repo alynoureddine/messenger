@@ -1,9 +1,19 @@
-import { BeforeInsert, Column, Entity, JoinTable, ManyToMany, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
+import {
+  BeforeInsert,
+  Column,
+  CreateDateColumn,
+  Entity,
+  JoinTable,
+  ManyToMany,
+  OneToMany,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
 import { IsEmail } from 'class-validator';
 import * as bcrypt from 'bcrypt';
 import { Exclude } from 'class-transformer';
 import { FriendRequestEntity } from '../friend-request/friend-request.entity';
 import { ChatEntity } from '../chat/chat.entity';
+import { MessageEntity } from '../message/message.entity';
 
 @Entity('user')
 export class UserEntity {
@@ -21,7 +31,7 @@ export class UserEntity {
   username: string;
 
   @Column()
-  @IsEmail()
+  // @IsEmail()
   email: string;
 
   @Column({default: ''})
@@ -49,4 +59,10 @@ export class UserEntity {
   @ManyToMany(type => ChatEntity, chat => chat.users)
   @JoinTable()
   chats: ChatEntity[];
+
+  @OneToMany(type => MessageEntity, message => message.user)
+  messages: MessageEntity[];
+
+  @CreateDateColumn()
+  createDate: Date;
 }

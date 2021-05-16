@@ -19,7 +19,7 @@ export class AuthController {
   }
 
   @Public()
-  @UsePipes(ValidationPipe)
+  // @UsePipes(ValidationPipe)
   @Post('register')
   async create(@Request() req, @Body() userData: CreateUserDto): Promise<UserEntity> {
     const user: UserEntity = await this.userService.create(userData);
@@ -31,7 +31,7 @@ export class AuthController {
   }
 
   @Get('me')
-  async meUser(@Request() req): Promise<UserEntity> {
+  async me(@Request() req): Promise<UserEntity> {
     return this.userService.findOne(req.user.id);
   }
 }

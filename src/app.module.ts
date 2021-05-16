@@ -11,10 +11,11 @@ import { ChatModule } from './chat/chat.module';
 import { MessageModule } from './message/message.module';
 import { GroupModule } from './group/group.module';
 import { GroupMessageModule } from './group-message/group-message.module';
+import { MongooseModule } from '@nestjs/mongoose';
+import { SocketSessionService } from './socket/socket-session.service';
 
 @Module({
   imports: [
-    SocketModule,
     AuthModule,
     ConfigModule.forRoot(),
     TypeOrmModule.forRootAsync({
@@ -27,7 +28,18 @@ import { GroupMessageModule } from './group-message/group-message.module';
         password: configService.get<string>('MYSQL_PASSWORD'),
         database: configService.get<string>('MYSQL_DATABASE'),
         entities: [__dirname + '/**/*.entity{.ts,.js}'],
-        synchronize: true,
+
+        // synchronize: true,
+      }),
+      inject: [ConfigService],
+    }),
+    MongooseModule.forRootAsync({
+      imports: [ConfigModule],
+      useFactory: async (configService: ConfigService) => ({
+        uri: configService.get<string>('MONGODB_URI'),
+        useNewUrlParser: true,
+        useUnifiedTopology: true,
+        useFindAndModify: false,
       }),
       inject: [ConfigService],
     }),
@@ -37,6 +49,7 @@ import { GroupMessageModule } from './group-message/group-message.module';
     MessageModule,
     GroupModule,
     GroupMessageModule,
+    SocketModule,
   ],
   controllers: [AppController],
   providers: [AppService],

@@ -16,8 +16,8 @@ export class FriendRequestEntity {
   })
   status: FriendRequestStatus;
 
-  @Exclude()
-  @ManyToOne(type => UserEntity, user => user)
+  // @Exclude()
+  @ManyToOne(type => UserEntity, user => user, { eager: true })
   requester: UserEntity;
 
   @Exclude()

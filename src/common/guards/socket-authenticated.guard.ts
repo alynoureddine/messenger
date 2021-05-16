@@ -1,9 +1,9 @@
-import { ExecutionContext, Injectable, CanActivate } from '@nestjs/common';
+import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { Request } from '../interfaces/request.interface';
 
 @Injectable()
-export class AuthenticatedGuard implements CanActivate {
+export class SocketAuthenticatedGuard implements CanActivate {
   constructor(private readonly reflector: Reflector) {
   }
 
@@ -14,7 +14,8 @@ export class AuthenticatedGuard implements CanActivate {
       return true;
     }
 
-    const request: Request = context.switchToHttp().getRequest();
+    const request: Request = context.switchToWs().getClient().request;
+
     return request.isAuthenticated();
   }
 }

@@ -1,4 +1,4 @@
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import { BadRequestException, HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { UserEntity } from './user.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
@@ -33,8 +33,7 @@ export class UserService {
     const user = await qb.getOne();
 
     if (user) {
-      const errors = { username: 'Username and email must be unique.' };
-      throw new HttpException({ message: 'Input data validation failed', errors }, HttpStatus.BAD_REQUEST);
+      throw new BadRequestException(['Username or email already taken.'])
     }
 
     // create new user
@@ -45,14 +44,15 @@ export class UserService {
     newUser.firstName = firstName;
     newUser.lastName = lastName;
 
-    const errors = await validate(newUser);
-    if (errors.length > 0) {
-      const errors = { username: 'User input is not valid.' };
-      throw new HttpException({ message: 'Input data validation failed', errors }, HttpStatus.BAD_REQUEST);
-
-    } else {
+    // const errors = await validate(newUser);
+    // console.log(errors);
+    // if (errors.length > 0) {
+    //   const errors = { username: 'User input is not valid.' };
+    //   throw new HttpException({ message: 'Input data validation failed', errors }, HttpStatus.BAD_REQUEST);
+    //
+    // } else {
       return this.userRepository.save(newUser);
-    }
+    // }
   }
 
   public async getFriends(id: number): Promise<UserEntity[]> {
@@ -64,9 +64,9 @@ export class UserService {
   public async getFriend(userId: number, friendId: number): Promise<UserEntity> {
     // get friend and make sure that both users are actually friends
     return this.userRepository.createQueryBuilder('friend')
-      .where('friend.id = :friendId', { friendId })
       .leftJoin('friend.friends', 'user')
-      .where('user.id = :userId', { userId })
+      .where('friend.id = :friendId', { friendId })
+      .andWhere('user.id = :userId', { userId })
       .getOne();
   }
 

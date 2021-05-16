@@ -1,10 +1,15 @@
-import { Body, Controller, Param, Post, Put, Req } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, Put, Req } from '@nestjs/common';
 import { CreateFriendRequestDto } from './dto/create-friend-request-dto';
 import { FriendRequestService } from './friend-request.service';
 
 @Controller('friend-requests')
 export class FriendRequestController {
   constructor(private readonly friendRequestService: FriendRequestService) {
+  }
+
+  @Get()
+  get(@Req() request) {
+    return this.friendRequestService.get(request.user);
   }
 
   @Post()
